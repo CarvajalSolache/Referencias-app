@@ -181,3 +181,6 @@ INSERT INTO tipos_referencia_campos (tipo_referencia_id, campo_id, es_obligatori
 (4, 20, 0),
 (4, 12, 0),
 (4, 21, 0);
+
+INSERT INTO usuarios (nombre_usuario, correo_electronico, contrasena_hash, rol, nombre, apellido)
+VALUES ('admin', 'admin@referencias.com', '$2b$10$TUtG.tThsTR55nGdzqYM9uMuOJxXnBIlGYfMBM0eMHMojBsZl6GCO', 'admin', 'Admin', 'Sistema');
