@@ -1,0 +1,189 @@
+---
+export const prerender = false
+import AppLayout from '../../../layouts/AppLayout.astro'
+
+const { id } = Astro.params
+---
+
+<AppLayout title="Detalle de referencia">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">Detalle de referencia</h4>
+    <div>
+      <a href={`/references/${id}/edit`} class="btn btn-primary me-2">✏️ Editar</a>
+      <a href="/references" class="btn btn-outline-secondary">← Volver</a>
+    </div>
+  </div>
+
+  <div id="contenido">
+    <div class="text-center text-muted py-5">Cargando...</div>
+  </div>
+
+  <!-- Modal generar cita -->
+  <div class="modal fade" id="modalCita" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Generar cita</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Formato</label>
+            <select class="form-select" id="formatoCita">
+              <option value="apa">APA</option>
+              <option value="ieee">IEEE</option>
+              <option value="acm">ACM</option>
+              <option value="chicago">Chicago</option>
+              <option value="harvard">Harvard</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Cita generada</label>
+            <textarea class="form-control" id="citaGenerada" rows="4" readonly
+              placeholder="La cita aparecerá aquí..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          <button type="button" class="btn btn-primary" id="btnCopiar">📋 Copiar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</AppLayout>
+
+<script>
+  import { getById } from '../../../services/references.service.js'
+  import { formatear } from '../../../services/formatter.service.js'
+  import { isAuthenticated } from '../../../services/auth.service.js'
+
+  if (!isAuthenticated()) window.location.href = '/auth/login'
+
+  const id = window.location.pathname.split('/')[2]
+
+  const renderContenido = (ref) => {
+    const contenido = document.getElementById('contenido')
+    contenido.innerHTML = `
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+
+          <div class="mb-4">
+            <span class="badge bg-secondary fs-6">${ref.tipo}</span>
+          </div>
+
+          <div class="mb-4">
+            <h6 class="text-muted mb-3">Datos de la referencia</h6>
+            <div class="row g-3">
+              <div class="col-md-8">
+                <label class="form-label text-muted small">Título</label>
+                <p class="fw-bold">${ref.titulo}</p>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label text-muted small">Año</label>
+                <p class="fw-bold">${ref.anio || '-'}</p>
+              </div>
+              ${ref.campos.map(c => `
+                <div class="col-md-4">
+                  <label class="form-label text-muted small">${c.nombre}</label>
+                  <p class="fw-bold">${c.valor}</p>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <hr />
+
+          <div class="mb-4">
+            <h6 class="text-muted mb-3">Autores</h6>
+            <div class="d-flex flex-wrap gap-2">
+              ${ref.autores.map(a => `
+                <span class="badge bg-light text-dark border fs-6">${a.nombre} ${a.apellido}</span>
+              `).join('')}
+            </div>
+          </div>
+
+          <hr />
+
+          <div class="mb-4">
+            <h6 class="text-muted mb-3">Clasificación</h6>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label text-muted small">Área</label>
+                <p class="fw-bold">${ref.tema ? ref.tema.area : '-'}</p>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label text-muted small">Asignatura</label>
+                <p class="fw-bold">${ref.tema ? ref.tema.asignatura : '-'}</p>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label text-muted small">Tema</label>
+                <p class="fw-bold">${ref.tema ? ref.tema.nombre : '-'}</p>
+              </div>
+            </div>
+          </div>
+
+          <hr />
+
+          <div>
+            <h6 class="text-muted mb-3">Generar cita</h6>
+            <div class="row g-3 align-items-end">
+              <div class="col-md-3">
+                <label class="form-label">Formato</label>
+                <select class="form-select" id="formatoCita">
+                  <option value="apa">APA</option>
+                  <option value="ieee">IEEE</option>
+                  <option value="acm">ACM</option>
+                  <option value="chicago">Chicago</option>
+                  <option value="harvard">Harvard</option>
+                </select>
+              </div>
+              <div class="col-md-7">
+                <label class="form-label">Cita generada</label>
+                <textarea class="form-control" id="citaGenerada" rows="2" readonly
+                  placeholder="La cita aparecerá aquí..."></textarea>
+              </div>
+              <div class="col-md-2">
+                <button class="btn btn-outline-success w-100" id="btnCopiar">📋 Copiar</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    `
+
+    // Generar cita
+    document.getElementById('formatoCita').addEventListener('change', async () => {
+      try {
+        const data = await formatear(id, document.getElementById('formatoCita').value)
+        document.getElementById('citaGenerada').value = data.cita
+      } catch (error) {
+        alert(error.message)
+      }
+    })
+
+    // Copiar
+    document.getElementById('btnCopiar').addEventListener('click', () => {
+      const cita = document.getElementById('citaGenerada').value
+      if (!cita) return
+      navigator.clipboard.writeText(cita)
+      document.getElementById('btnCopiar').textContent = '✅ Copiado'
+      setTimeout(() => document.getElementById('btnCopiar').textContent = '📋 Copiar', 2000)
+    })
+  }
+
+  const cargar = async () => {
+    try {
+      const ref = await getById(id)
+      renderContenido(ref)
+    } catch (error) {
+      document.getElementById('contenido').innerHTML = `
+        <div class="alert alert-danger">${error.message}</div>
+      `
+    }
+  }
+
+  cargar()
+</script>

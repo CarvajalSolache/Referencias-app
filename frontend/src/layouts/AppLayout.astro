@@ -1,0 +1,13 @@
+---
+import Layout from './Layout.astro'
+import Navbar from '../components/Navbar.astro'
+
+const { title } = Astro.props
+---
+
+<Layout title={title}>
+  <Navbar />
+  <main class="container py-4">
+    <slot />
+  </main>
+</Layout>

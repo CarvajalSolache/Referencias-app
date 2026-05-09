@@ -1,0 +1,530 @@
+---
+export const prerender = false
+import AppLayout from '../../../layouts/AppLayout.astro'
+
+const { id } = Astro.params
+---
+
+<AppLayout title="Editar referencia">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">Editar referencia</h4>
+    <div>
+      <a href={`/references/${id}`} class="btn btn-outline-secondary">← Volver</a>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body p-4">
+
+      <!-- Tipo de referencia -->
+      <div class="mb-4">
+        <label class="form-label fw-bold">Tipo de referencia</label>
+        <select class="form-select" id="tipoReferencia">
+          <option value="">-- Selecciona un tipo --</option>
+          <option value="libro">Libro</option>
+          <option value="articulo">Artículo</option>
+          <option value="sitio_web">Sitio web</option>
+          <option value="repositorio_electronico">Repositorio electrónico</option>
+        </select>
+      </div>
+
+      <!-- Contenido dinámico -->
+      <div id="formularioDinamico" class="d-none">
+
+        <!-- Campos libro -->
+        <div id="campos-libro" class="d-none">
+          <h6 class="text-muted mb-3">Datos del libro</h6>
+          <div class="row g-3 mb-4">
+            <div class="col-md-8">
+              <label class="form-label">Título</label>
+              <input type="text" class="form-control" id="titulo" placeholder="Título del libro" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Año</label>
+              <input type="number" class="form-control" id="anio" placeholder="2024" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Editorial</label>
+              <input type="text" class="form-control" data-campo="editorial" placeholder="Editorial" />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Edición</label>
+              <input type="text" class="form-control" data-campo="edicion" placeholder="3ra" />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">ISBN</label>
+              <input type="text" class="form-control" data-campo="isbn" placeholder="978-..." />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Ciudad</label>
+              <input type="text" class="form-control" data-campo="ciudad_publicacion" placeholder="Ciudad de publicación" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">País</label>
+              <input type="text" class="form-control" data-campo="pais_publicacion" placeholder="País de publicación" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Campos artículo -->
+        <div id="campos-articulo" class="d-none">
+          <h6 class="text-muted mb-3">Datos del artículo</h6>
+          <div class="row g-3 mb-4">
+            <div class="col-md-8">
+              <label class="form-label">Título</label>
+              <input type="text" class="form-control" id="titulo" placeholder="Título del artículo" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Año</label>
+              <input type="number" class="form-control" id="anio" placeholder="2024" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Nombre de la revista</label>
+              <input type="text" class="form-control" data-campo="nombre_revista" placeholder="Nombre de la revista" />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Volumen</label>
+              <input type="text" class="form-control" data-campo="volumen" placeholder="Vol. 1" />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Número</label>
+              <input type="text" class="form-control" data-campo="numero" placeholder="No. 2" />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Página inicio</label>
+              <input type="number" class="form-control" data-campo="pagina_inicio" placeholder="10" />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Página fin</label>
+              <input type="number" class="form-control" data-campo="pagina_fin" placeholder="25" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">DOI</label>
+              <input type="text" class="form-control" data-campo="doi" placeholder="10.xxxx/xxxxx" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Campos sitio web -->
+        <div id="campos-sitio_web" class="d-none">
+          <h6 class="text-muted mb-3">Datos del sitio web</h6>
+          <div class="row g-3 mb-4">
+            <div class="col-md-8">
+              <label class="form-label">Título</label>
+              <input type="text" class="form-control" id="titulo" placeholder="Título de la página" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Año</label>
+              <input type="number" class="form-control" id="anio" placeholder="2024" />
+            </div>
+            <div class="col-md-8">
+              <label class="form-label">URL</label>
+              <input type="url" class="form-control" data-campo="url" placeholder="https://..." />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Nombre del sitio</label>
+              <input type="text" class="form-control" data-campo="nombre_sitio" placeholder="Nombre del sitio web" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Fecha de acceso</label>
+              <input type="date" class="form-control" data-campo="fecha_acceso" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Campos repositorio electrónico -->
+        <div id="campos-repositorio_electronico" class="d-none">
+          <h6 class="text-muted mb-3">Datos del repositorio</h6>
+          <div class="row g-3 mb-4">
+            <div class="col-md-8">
+              <label class="form-label">Título</label>
+              <input type="text" class="form-control" id="titulo" placeholder="Título del documento" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Año</label>
+              <input type="number" class="form-control" id="anio" placeholder="2024" />
+            </div>
+            <div class="col-md-8">
+              <label class="form-label">URL</label>
+              <input type="url" class="form-control" data-campo="url" placeholder="https://..." />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Nombre del repositorio</label>
+              <input type="text" class="form-control" data-campo="nombre_repositorio" placeholder="Nombre del repositorio" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Institución</label>
+              <input type="text" class="form-control" data-campo="institucion" placeholder="Institución" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Fecha de acceso</label>
+              <input type="date" class="form-control" data-campo="fecha_acceso" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">DOI</label>
+              <input type="text" class="form-control" data-campo="doi" placeholder="10.xxxx/xxxxx" />
+            </div>
+          </div>
+        </div>
+
+        <hr />
+
+        <!-- Autores -->
+        <div class="mb-4">
+          <h6 class="text-muted mb-3">Autores</h6>
+          <div id="listaAutores"></div>
+          <button class="btn btn-outline-secondary btn-sm mt-2" id="btnAgregarAutor">+ Agregar autor</button>
+        </div>
+
+        <hr />
+
+        <!-- Clasificación -->
+        <div class="mb-4">
+          <h6 class="text-muted mb-3">Clasificación</h6>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Área</label>
+              <div class="input-group">
+                <select class="form-select" id="selectArea">
+                  <option value="">-- Selecciona --</option>
+                </select>
+                <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalArea">+</button>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Asignatura</label>
+              <div class="input-group">
+                <select class="form-select" id="selectAsignatura" disabled>
+                  <option value="">-- Selecciona área primero --</option>
+                </select>
+                <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalAsignatura">+</button>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Tema</label>
+              <div class="input-group">
+                <select class="form-select" id="selectTema" disabled>
+                  <option value="">-- Selecciona asignatura primero --</option>
+                </select>
+                <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalTema">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr />
+
+        <div class="d-flex justify-content-end gap-2">
+          <button class="btn btn-primary px-5" id="btnGuardar">Guardar cambios</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal crear área -->
+  <div class="modal fade" id="modalArea" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Nueva área</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="text" class="form-control" id="inputNuevaArea" placeholder="Nombre del área" />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btnGuardarArea">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal crear asignatura -->
+  <div class="modal fade" id="modalAsignatura" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Nueva asignatura</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="text" class="form-control" id="inputNuevaAsignatura" placeholder="Nombre de la asignatura" />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btnGuardarAsignatura">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal crear tema -->
+  <div class="modal fade" id="modalTema" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Nuevo tema</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="text" class="form-control" id="inputNuevoTema" placeholder="Nombre del tema" />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btnGuardarTema">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</AppLayout>
+
+<script>
+  import { getById, update } from '../../../services/references.service.js'
+  import { getAreas, getAsignaturas, getTemas, createArea, createAsignatura, createTema } from '../../../services/catalog.service.js'
+  import { isAuthenticated } from '../../../services/auth.service.js'
+
+  if (!isAuthenticated()) window.location.href = '/auth/login'
+
+  const id = window.location.pathname.split('/')[2]
+  const tipoSelect = document.getElementById('tipoReferencia')
+  const formulario = document.getElementById('formularioDinamico')
+  const todosCampos = document.querySelectorAll('[id^="campos-"]')
+  const selectArea = document.getElementById('selectArea')
+  const selectAsignatura = document.getElementById('selectAsignatura')
+  const selectTema = document.getElementById('selectTema')
+
+  const tiposMap = ['libro', 'articulo', 'sitio_web', 'repositorio_electronico']
+  const camposIds = {
+    editorial: 1, edicion: 2, ciudad_publicacion: 3, pais_publicacion: 4, isbn: 5,
+    volumen: 6, nombre_revista: 8, numero: 9, pagina_inicio: 10, pagina_fin: 11,
+    doi: 12, url: 14, fecha_acceso: 15, nombre_sitio: 16, nombre_repositorio: 18,
+    institucion: 19
+  }
+
+  // Mostrar campos según tipo
+  tipoSelect.addEventListener('change', () => {
+    const tipo = tipoSelect.value
+    if (!tipo) {
+      formulario.classList.add('d-none')
+      return
+    }
+    formulario.classList.remove('d-none')
+    todosCampos.forEach(el => el.classList.add('d-none'))
+    const camposActivos = document.getElementById('campos-' + tipo)
+    if (camposActivos) camposActivos.classList.remove('d-none')
+  })
+
+  // Agregar fila de autor
+  const agregarFilaAutor = (nombre = '', apellido = '') => {
+    const fila = document.createElement('div')
+    fila.classList.add('row', 'g-2', 'mb-2', 'autor-row')
+    fila.innerHTML = `
+      <div class="col-md-5">
+        <input type="text" class="form-control" placeholder="Nombre" value="${nombre}" />
+      </div>
+      <div class="col-md-5">
+        <input type="text" class="form-control" placeholder="Apellido" value="${apellido}" />
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-outline-danger w-100 btn-eliminar-autor">🗑️</button>
+      </div>
+    `
+    document.getElementById('listaAutores').appendChild(fila)
+    fila.querySelector('.btn-eliminar-autor').addEventListener('click', () => fila.remove())
+  }
+
+  document.getElementById('btnAgregarAutor').addEventListener('click', () => agregarFilaAutor())
+
+  // Cargar áreas
+  const cargarAreas = async (areaSeleccionada = null) => {
+    const areas = await getAreas()
+    areas.forEach(a => {
+      const option = document.createElement('option')
+      option.value = a.id
+      option.text = a.nombre
+      if (areaSeleccionada && a.id == areaSeleccionada) option.selected = true
+      selectArea.appendChild(option)
+    })
+  }
+
+  selectArea.addEventListener('change', async () => {
+    selectAsignatura.innerHTML = '<option value="">-- Selecciona --</option>'
+    selectTema.innerHTML = '<option value="">-- Selecciona asignatura primero --</option>'
+    selectTema.disabled = true
+    if (!selectArea.value) { selectAsignatura.disabled = true; return }
+    selectAsignatura.disabled = false
+    const asignaturas = await getAsignaturas(selectArea.value)
+    asignaturas.forEach(a => {
+      const option = document.createElement('option')
+      option.value = a.id
+      option.text = a.nombre
+      selectAsignatura.appendChild(option)
+    })
+  })
+
+  selectAsignatura.addEventListener('change', async () => {
+    selectTema.innerHTML = '<option value="">-- Selecciona --</option>'
+    if (!selectAsignatura.value) { selectTema.disabled = true; return }
+    selectTema.disabled = false
+    const temas = await getTemas(selectAsignatura.value)
+    temas.forEach(t => {
+      const option = document.createElement('option')
+      option.value = t.id
+      option.text = t.nombre
+      selectTema.appendChild(option)
+    })
+  })
+
+  // Modales
+  document.getElementById('btnGuardarArea').addEventListener('click', async () => {
+    const nombre = document.getElementById('inputNuevaArea').value.trim()
+    if (!nombre) return
+    try {
+      const area = await createArea(nombre)
+      const option = document.createElement('option')
+      option.value = area.id
+      option.text = area.nombre
+      option.selected = true
+      selectArea.appendChild(option)
+      selectAsignatura.disabled = false
+      selectAsignatura.innerHTML = '<option value="">-- Selecciona --</option>'
+      selectTema.disabled = true
+      document.getElementById('inputNuevaArea').value = ''
+      bootstrap.Modal.getInstance(document.getElementById('modalArea')).hide()
+    } catch (error) { alert(error.message) }
+  })
+
+  document.getElementById('btnGuardarAsignatura').addEventListener('click', async () => {
+    const nombre = document.getElementById('inputNuevaAsignatura').value.trim()
+    if (!nombre || !selectArea.value) return
+    try {
+      const asignatura = await createAsignatura(nombre, selectArea.value)
+      const option = document.createElement('option')
+      option.value = asignatura.id
+      option.text = asignatura.nombre
+      option.selected = true
+      selectAsignatura.appendChild(option)
+      selectTema.disabled = false
+      selectTema.innerHTML = '<option value="">-- Selecciona --</option>'
+      document.getElementById('inputNuevaAsignatura').value = ''
+      bootstrap.Modal.getInstance(document.getElementById('modalAsignatura')).hide()
+    } catch (error) { alert(error.message) }
+  })
+
+  document.getElementById('btnGuardarTema').addEventListener('click', async () => {
+    const nombre = document.getElementById('inputNuevoTema').value.trim()
+    if (!nombre || !selectAsignatura.value) return
+    try {
+      const tema = await createTema(nombre, selectAsignatura.value)
+      const option = document.createElement('option')
+      option.value = tema.id
+      option.text = tema.nombre
+      option.selected = true
+      selectTema.appendChild(option)
+      document.getElementById('inputNuevoTema').value = ''
+      bootstrap.Modal.getInstance(document.getElementById('modalTema')).hide()
+    } catch (error) { alert(error.message) }
+  })
+
+  // Cargar referencia existente
+  const cargar = async () => {
+    const ref = await getById(id)
+    const tipo = tiposMap[ref.tipo_referencia_id - 1]
+
+    // Seleccionar tipo
+    tipoSelect.value = tipo
+    formulario.classList.remove('d-none')
+    todosCampos.forEach(el => el.classList.add('d-none'))
+    document.getElementById('campos-' + tipo).classList.remove('d-none')
+
+    // Prellenar título y año
+    document.getElementById('titulo').value = ref.titulo
+    document.getElementById('anio').value = ref.anio || ''
+
+    // Prellenar campos dinámicos
+    ref.campos.forEach(c => {
+      const input = document.querySelector('[data-campo="' + c.nombre + '"]')
+      if (input) input.value = c.valor
+    })
+
+    // Prellenar autores
+    ref.autores.forEach(a => agregarFilaAutor(a.nombre, a.apellido))
+
+    // Prellenar clasificación
+    await cargarAreas(ref.tema ? ref.tema.area_id : null)
+    if (ref.tema) {
+      selectArea.value = ref.tema.area_id
+      selectAsignatura.disabled = false
+      const asignaturas = await getAsignaturas(ref.tema.area_id)
+      asignaturas.forEach(a => {
+        const option = document.createElement('option')
+        option.value = a.id
+        option.text = a.nombre
+        if (a.id == ref.tema.asignatura_id) option.selected = true
+        selectAsignatura.appendChild(option)
+      })
+      selectTema.disabled = false
+      const temas = await getTemas(ref.tema.asignatura_id)
+      temas.forEach(t => {
+        const option = document.createElement('option')
+        option.value = t.id
+        option.text = t.nombre
+        if (t.id == ref.tema.id) option.selected = true
+        selectTema.appendChild(option)
+      })
+    } else {
+      await cargarAreas()
+    }
+  }
+
+  // Guardar cambios
+  document.getElementById('btnGuardar').addEventListener('click', async () => {
+    const tipo = tipoSelect.value
+    if (!tipo) return alert('Selecciona un tipo de referencia')
+
+    const titulo = document.getElementById('titulo').value.trim()
+    const anio = document.getElementById('anio').value ? parseInt(document.getElementById('anio').value) : null
+    if (!titulo) return alert('El título es requerido')
+
+    const autores = []
+    document.querySelectorAll('.autor-row').forEach((fila, i) => {
+      const inputs = fila.querySelectorAll('input')
+      const nombre = inputs[0].value.trim()
+      const apellido = inputs[1].value.trim()
+      if (nombre && apellido) autores.push({ nombre, apellido, orden: i + 1 })
+    })
+    if (autores.length === 0) return alert('Agrega al menos un autor')
+
+    const campos = []
+    document.querySelectorAll('[data-campo]').forEach(input => {
+      const nombreCampo = input.dataset.campo
+      const valor = input.value.trim()
+      if (valor && camposIds[nombreCampo]) {
+        campos.push({ campo_id: camposIds[nombreCampo], valor })
+      }
+    })
+
+    const data = {
+      titulo,
+      anio,
+      tipo_referencia_id: tiposMap.indexOf(tipo) + 1,
+      publica: false,
+      autores,
+      campos,
+      tema_id: selectTema.value ? parseInt(selectTema.value) : undefined
+    }
+
+    try {
+      await update(id, data)
+      window.location.href = '/references/' + id
+    } catch (error) {
+      alert(error.message)
+    }
+  })
+
+  cargar()
+</script>

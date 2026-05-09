@@ -1,0 +1,58 @@
+---
+import Layout from '../../layouts/Layout.astro'
+---
+
+<Layout title="Iniciar sesión">
+  <div class="container vh-100 d-flex align-items-center justify-content-center">
+    <div class="card shadow" style="width: 100%; max-width: 420px;">
+      <div class="card-body p-5">
+
+        <h4 class="card-title text-center mb-4">Iniciar sesión</h4>
+
+        <div id="error" class="alert alert-danger d-none"></div>
+
+        <div class="mb-3">
+          <label for="correo" class="form-label">Correo electrónico</label>
+          <input type="email" class="form-control" id="correo" placeholder="correo@ejemplo.com" />
+        </div>
+
+        <div class="mb-4">
+          <label for="contrasena" class="form-label">Contraseña</label>
+          <input type="password" class="form-control" id="contrasena" placeholder="••••••••" />
+        </div>
+
+        <div class="d-grid">
+          <button class="btn btn-primary" id="btnLogin">Entrar</button>
+        </div>
+
+        <p class="text-center mt-4 mb-0">
+          ¿No tienes cuenta? <a href="/auth/register">Regístrate</a>
+        </p>
+
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { login, isAuthenticated } from '../../services/auth.service.js'
+
+  // Si ya está autenticado redirigir
+  if (isAuthenticated()) window.location.href = '/references'
+
+  document.getElementById('btnLogin').addEventListener('click', async () => {
+    const correo = document.getElementById('correo').value.trim()
+    const contrasena = document.getElementById('contrasena').value.trim()
+    const errorDiv = document.getElementById('error')
+
+    errorDiv.classList.add('d-none')
+
+    try {
+      await login(correo, contrasena)
+      window.location.href = '/references'
+    } catch (error) {
+      errorDiv.textContent = error.message
+      errorDiv.classList.remove('d-none')
+    }
+  })
+</script>

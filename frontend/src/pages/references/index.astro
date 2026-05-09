@@ -1,0 +1,196 @@
+---
+import AppLayout from '../../layouts/AppLayout.astro'
+---
+
+<AppLayout title="Mis referencias">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">Mis referencias</h4>
+    <a href="/references/create" class="btn btn-primary">+ Nueva referencia</a>
+  </div>
+
+  <!-- Filtros -->
+  <div class="row mb-4 g-2">
+    <div class="col-md-4">
+      <select class="form-select" id="filtroTipo">
+        <option value="">Todos los tipos</option>
+        <option value="1">Libro</option>
+        <option value="2">Artículo</option>
+        <option value="3">Sitio web</option>
+        <option value="4">Repositorio electrónico</option>
+      </select>
+    </div>
+    <div class="col-md-4">
+      <input type="number" class="form-control" id="filtroAnio" placeholder="Filtrar por año..." />
+    </div>
+    <div class="col-md-4">
+      <input type="text" class="form-control" id="filtroTitulo" placeholder="Buscar por título..." />
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="card shadow-sm">
+    <div class="card-body p-0">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Título</th>
+            <th>Tipo</th>
+            <th>Año</th>
+            <th>Autores</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tablaReferencias">
+          <tr>
+            <td colspan="6" class="text-center text-muted py-4">Cargando referencias...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal generar cita -->
+  <div class="modal fade" id="modalCita" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Generar cita</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Formato</label>
+            <select class="form-select" id="formatoCita">
+              <option value="apa">APA</option>
+              <option value="ieee">IEEE</option>
+              <option value="acm">ACM</option>
+              <option value="chicago">Chicago</option>
+              <option value="harvard">Harvard</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Cita generada</label>
+            <textarea class="form-control" id="citaGenerada" rows="4" readonly
+              placeholder="La cita aparecerá aquí..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          <button type="button" class="btn btn-primary" id="btnCopiar">📋 Copiar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</AppLayout>
+
+<script>
+  import { getAll, remove } from '../../services/references.service.js'
+  import { formatear } from '../../services/formatter.service.js'
+  import { isAuthenticated, getRol } from '../../services/auth.service.js'
+
+  if (!isAuthenticated()) window.location.href = '/auth/login'
+
+  const rol = getRol()
+  let referenciaIdSeleccionada = null
+  let referencias = []
+
+  const renderTabla = (data) => {
+    const tbody = document.getElementById('tablaReferencias')
+    if (data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No hay referencias aún</td></tr>'
+      return
+    }
+
+    tbody.innerHTML = data.map((ref, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${ref.titulo}</td>
+        <td><span class="badge bg-secondary">${ref.tipo}</span></td>
+        <td>${ref.anio || '-'}</td>
+        <td>${ref.autores || '-'}</td>
+        <td>
+          <a href="/references/${ref.id}" class="btn btn-sm btn-outline-secondary" title="Ver">👁️</a>
+          <a href="/references/${ref.id}/edit" class="btn btn-sm btn-outline-primary" title="Editar">✏️</a>
+          ${rol === 'admin' ? `<button class="btn btn-sm btn-outline-danger btn-eliminar" data-id="${ref.id}" title="Eliminar">🗑️</button>` : ''}
+          <button class="btn btn-sm btn-outline-success btn-cita" data-id="${ref.id}" title="Generar cita" data-bs-toggle="modal" data-bs-target="#modalCita">📋</button>
+        </td>
+      </tr>
+    `).join('')
+
+    // Eliminar
+    document.querySelectorAll('.btn-eliminar').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('¿Estás seguro de eliminar esta referencia?')) return
+        try {
+          await remove(btn.dataset.id)
+          cargarReferencias()
+        } catch (error) {
+          alert(error.message)
+        }
+      })
+    })
+
+    // Generar cita
+    document.querySelectorAll('.btn-cita').forEach(btn => {
+      btn.addEventListener('click', () => {
+        referenciaIdSeleccionada = btn.dataset.id
+        document.getElementById('citaGenerada').value = ''
+      })
+    })
+  }
+
+  const cargarReferencias = async (filtros = {}) => {
+    try {
+      referencias = await getAll(filtros)
+      renderTabla(referencias)
+    } catch (error) {
+      alert(error.message)
+    }
+  }
+
+  // Filtros
+  let filtroTimeout
+  const aplicarFiltros = () => {
+    clearTimeout(filtroTimeout)
+    filtroTimeout = setTimeout(() => {
+      const filtros = {}
+      const tipo = document.getElementById('filtroTipo').value
+      const anio = document.getElementById('filtroAnio').value
+      const titulo = document.getElementById('filtroTitulo').value
+      if (tipo) filtros.tipo_referencia_id = tipo
+      if (anio) filtros.anio = anio
+      if (titulo) filtros.titulo = titulo
+      cargarReferencias(filtros)
+    }, 400)
+  }
+
+  document.getElementById('filtroTipo').addEventListener('change', aplicarFiltros)
+  document.getElementById('filtroAnio').addEventListener('input', aplicarFiltros)
+  document.getElementById('filtroTitulo').addEventListener('input', aplicarFiltros)
+
+  // Modal cita
+  document.getElementById('formatoCita').addEventListener('change', async () => {
+    if (!referenciaIdSeleccionada) return
+    try {
+      const data = await formatear(referenciaIdSeleccionada, document.getElementById('formatoCita').value)
+      document.getElementById('citaGenerada').value = data.cita
+    } catch (error) {
+      alert(error.message)
+    }
+  })
+
+  // Copiar cita
+  document.getElementById('btnCopiar').addEventListener('click', () => {
+    const cita = document.getElementById('citaGenerada').value
+    if (!cita) return
+    navigator.clipboard.writeText(cita)
+    document.getElementById('btnCopiar').textContent = '✅ Copiado'
+    setTimeout(() => document.getElementById('btnCopiar').textContent = '📋 Copiar', 2000)
+  })
+
+  // Cargar al inicio
+  cargarReferencias()
+</script>

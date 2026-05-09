@@ -1,0 +1,197 @@
+---
+import AppLayout from '../../layouts/AppLayout.astro'
+---
+
+<AppLayout title="Gestión de usuarios">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">Gestión de usuarios</h4>
+  </div>
+
+  <!-- Filtros -->
+  <div class="row mb-4 g-2">
+    <div class="col-md-4">
+      <select class="form-select" id="filtroRol">
+        <option value="">Todos los roles</option>
+        <option value="admin">Admin</option>
+        <option value="usuario">Usuario</option>
+      </select>
+    </div>
+    <div class="col-md-8">
+      <input type="text" class="form-control" id="filtroBusqueda" placeholder="Buscar por nombre o correo..." />
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="card shadow-sm">
+    <div class="card-body p-0">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Usuario</th>
+            <th>Rol</th>
+            <th>Registro</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tablaUsuarios">
+          <tr>
+            <td colspan="7" class="text-center text-muted py-4">Cargando usuarios...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal cambiar rol -->
+  <div class="modal fade" id="modalRol" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Cambiar rol</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted small mb-3">Selecciona el nuevo rol para este usuario</p>
+          <select class="form-select" id="selectRol">
+            <option value="admin">Admin</option>
+            <option value="usuario">Usuario</option>
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btnGuardarRol">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal confirmar eliminar -->
+  <div class="modal fade" id="modalEliminar" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Eliminar usuario</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p>¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">Eliminar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</AppLayout>
+
+<script>
+  import { getAll, changeRol, remove } from '../../services/users.service.js'
+  import { isAuthenticated, getRol } from '../../services/auth.service.js'
+
+  if (!isAuthenticated() || getRol() !== 'admin') window.location.href = '/references'
+
+  let usuarios = []
+  let usuarioIdSeleccionado = null
+
+  const formatFecha = (fecha) => {
+    return new Date(fecha).toLocaleDateString('es-MX')
+  }
+
+  const renderTabla = (data) => {
+    const tbody = document.getElementById('tablaUsuarios')
+    if (data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No hay usuarios</td></tr>'
+      return
+    }
+
+    tbody.innerHTML = data.map((u, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${u.nombre || ''} ${u.apellido || ''}</td>
+        <td>${u.correo_electronico}</td>
+        <td>${u.nombre_usuario}</td>
+        <td><span class="badge ${u.rol === 'admin' ? 'bg-danger' : 'bg-secondary'}">${u.rol}</span></td>
+        <td>${formatFecha(u.fecha_creacion)}</td>
+        <td>
+          <button class="btn btn-sm btn-outline-primary btn-rol" data-id="${u.id}" data-rol="${u.rol}" data-bs-toggle="modal" data-bs-target="#modalRol">
+            👤 Cambiar rol
+          </button>
+          <button class="btn btn-sm btn-outline-danger btn-eliminar" data-id="${u.id}" data-bs-toggle="modal" data-bs-target="#modalEliminar">
+            🗑️
+          </button>
+        </td>
+      </tr>
+    `).join('')
+
+    document.querySelectorAll('.btn-rol').forEach(btn => {
+      btn.addEventListener('click', () => {
+        usuarioIdSeleccionado = btn.dataset.id
+        document.getElementById('selectRol').value = btn.dataset.rol
+      })
+    })
+
+    document.querySelectorAll('.btn-eliminar').forEach(btn => {
+      btn.addEventListener('click', () => {
+        usuarioIdSeleccionado = btn.dataset.id
+      })
+    })
+  }
+
+  const cargarUsuarios = async () => {
+    try {
+      usuarios = await getAll()
+      renderTabla(usuarios)
+    } catch (error) {
+      alert(error.message)
+    }
+  }
+
+  // Filtros
+  const aplicarFiltros = () => {
+    const rol = document.getElementById('filtroRol').value
+    const busqueda = document.getElementById('filtroBusqueda').value.toLowerCase()
+    const filtrados = usuarios.filter(u => {
+      const matchRol = !rol || u.rol === rol
+      const matchBusqueda = !busqueda ||
+        (u.nombre && u.nombre.toLowerCase().includes(busqueda)) ||
+        (u.apellido && u.apellido.toLowerCase().includes(busqueda)) ||
+        u.correo_electronico.toLowerCase().includes(busqueda)
+      return matchRol && matchBusqueda
+    })
+    renderTabla(filtrados)
+  }
+
+  document.getElementById('filtroRol').addEventListener('change', aplicarFiltros)
+  document.getElementById('filtroBusqueda').addEventListener('input', aplicarFiltros)
+
+  // Cambiar rol
+  document.getElementById('btnGuardarRol').addEventListener('click', async () => {
+    const rol = document.getElementById('selectRol').value
+    try {
+      await changeRol(usuarioIdSeleccionado, rol)
+      bootstrap.Modal.getInstance(document.getElementById('modalRol')).hide()
+      cargarUsuarios()
+    } catch (error) {
+      alert(error.message)
+    }
+  })
+
+  // Eliminar usuario
+  document.getElementById('btnConfirmarEliminar').addEventListener('click', async () => {
+    try {
+      await remove(usuarioIdSeleccionado)
+      bootstrap.Modal.getInstance(document.getElementById('modalEliminar')).hide()
+      cargarUsuarios()
+    } catch (error) {
+      alert(error.message)
+    }
+  })
+
+  cargarUsuarios()
+</script>
