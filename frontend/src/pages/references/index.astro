@@ -39,6 +39,7 @@ import AppLayout from '../../layouts/AppLayout.astro'
             <th>Tipo</th>
             <th>Año</th>
             <th>Autores</th>
+            <th>Agregado por</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -111,6 +112,7 @@ import AppLayout from '../../layouts/AppLayout.astro'
         <td><span class="badge bg-secondary">${ref.tipo}</span></td>
         <td>${ref.anio || '-'}</td>
         <td>${ref.autores || '-'}</td>
+        <td>${ref.agregado_por || '-'}</td>
         <td>
           <a href="/references/${ref.id}" class="btn btn-sm btn-outline-secondary" title="Ver">👁️</a>
           <a href="/references/${ref.id}/edit" class="btn btn-sm btn-outline-primary" title="Editar">✏️</a>

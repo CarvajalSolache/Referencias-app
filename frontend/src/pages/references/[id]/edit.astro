@@ -479,6 +479,20 @@ const { id } = Astro.params
     } else {
       await cargarAreas()
     }
+      // Mostrar agregado por
+  const agregadoPorDiv = document.createElement('div')
+  agregadoPorDiv.classList.add('mb-4')
+  agregadoPorDiv.innerHTML = `
+    <hr />
+    <h6 class="text-muted mb-3">Información de registro</h6>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label text-muted small">Agregado por</label>
+        <p class="fw-bold">${ref.agregado_por}</p>
+      </div>
+    </div>
+  `
+  document.getElementById('btnGuardar').parentElement.before(agregadoPorDiv)
   }
 
   // Guardar cambios

@@ -4,14 +4,16 @@ const getAll = async (usuario_id, filtros = {}) => {
   let query = `
     SELECT r.id, r.titulo, r.anio, r.publica, r.fecha_creacion,
            tr.nombre AS tipo,
-           GROUP_CONCAT(CONCAT(a.nombre, ' ', a.apellido) ORDER BY ra.orden SEPARATOR ', ') AS autores
+           GROUP_CONCAT(CONCAT(a.nombre, ' ', a.apellido) ORDER BY ra.orden SEPARATOR ', ') AS autores,
+           u.nombre_usuario AS agregado_por
     FROM referencias r
     JOIN tipos_referencia tr ON r.tipo_referencia_id = tr.id
+    JOIN usuarios u ON r.usuario_id = u.id
     LEFT JOIN referencia_autores ra ON r.id = ra.referencia_id
     LEFT JOIN autores a ON ra.autor_id = a.id
-    WHERE r.usuario_id = ?
+    WHERE 1=1
   `
-  const params = [usuario_id]
+  const params = []
 
   if (filtros.tipo_referencia_id) {
     query += ' AND r.tipo_referencia_id = ?'
@@ -34,22 +36,22 @@ const getAll = async (usuario_id, filtros = {}) => {
   return rows
 }
 
-
 const getById = async (id, usuario_id) => {
   const [rows] = await pool.query(
     `SELECT r.id, r.titulo, r.anio, r.publica, r.fecha_creacion,
-            tr.nombre AS tipo, tr.id AS tipo_referencia_id
+            tr.nombre AS tipo, tr.id AS tipo_referencia_id,
+            r.usuario_id, u.nombre_usuario AS agregado_por
      FROM referencias r
      JOIN tipos_referencia tr ON r.tipo_referencia_id = tr.id
-     WHERE r.id = ? AND r.usuario_id = ?`,
-    [id, usuario_id]
+     JOIN usuarios u ON r.usuario_id = u.id
+     WHERE r.id = ?`,
+    [id]
   )
 
   if (rows.length === 0) throw new Error('Referencia no encontrada')
 
   const referencia = rows[0]
 
-  // Obtener autores
   const [autores] = await pool.query(
     `SELECT a.id, a.nombre, a.apellido, ra.orden
      FROM autores a
@@ -59,7 +61,6 @@ const getById = async (id, usuario_id) => {
     [id]
   )
 
-  // Obtener campos
   const [campos] = await pool.query(
     `SELECT c.nombre, vcr.valor
      FROM valores_campos_referencia vcr
@@ -68,9 +69,8 @@ const getById = async (id, usuario_id) => {
     [id]
   )
 
-  // Obtener tema
   const [temas] = await pool.query(
-    `SELECT t.id, t.nombre, a.nombre AS asignatura, ar.nombre AS area
+    `SELECT t.id, t.nombre, t.asignatura_id, a.nombre AS asignatura, a.area_id, ar.nombre AS area
      FROM referencia_temas rt
      JOIN temas t ON rt.tema_id = t.id
      JOIN asignaturas a ON t.asignatura_id = a.id
