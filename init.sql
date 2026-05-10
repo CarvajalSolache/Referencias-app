@@ -184,3 +184,64 @@ INSERT INTO tipos_referencia_campos (tipo_referencia_id, campo_id, es_obligatori
 
 INSERT INTO usuarios (nombre_usuario, correo_electronico, contrasena_hash, rol, nombre, apellido)
 VALUES ('admin', 'admin@referencias.com', '$2b$10$TUtG.tThsTR55nGdzqYM9uMuOJxXnBIlGYfMBM0eMHMojBsZl6GCO', 'admin', 'Admin', 'Sistema');
+
+-- Usuario normal
+INSERT INTO usuarios (nombre_usuario, correo_electronico, contrasena_hash, rol, nombre, apellido)
+VALUES ('usuario', 'usuario@referencias.com', '$2b$10$5cy4FWoCTCVnw39QxNoYMuPNWPKR/dtLCjJ7XJljMy6FUh/r.8hey', 'usuario', 'Usuario', 'Demo');
+
+-- Area, asignatura y tema de ejemplo
+INSERT INTO areas (nombre) VALUES ('Ciencias de la computacion');
+INSERT INTO asignaturas (area_id, nombre) VALUES (1, 'Ingenieria de software');
+INSERT INTO temas (asignatura_id, nombre) VALUES (1, 'Patrones de diseno');
+
+-- Referencia 1: Libro (usuario admin id=1)
+INSERT INTO referencias (tipo_referencia_id, usuario_id, titulo, anio, publica) VALUES (1, 1, 'Clean Code', 2008, 1);
+INSERT INTO autores (nombre, apellido) VALUES ('Robert', 'Martin');
+INSERT INTO referencia_autores (referencia_id, autor_id, orden) VALUES (1, 1, 1);
+INSERT INTO valores_campos_referencia (referencia_id, campo_id, valor) VALUES
+(1, 1, 'Prentice Hall'),
+(1, 3, 'Upper Saddle River'),
+(1, 4, 'Estados Unidos');
+INSERT INTO referencia_temas (referencia_id, tema_id) VALUES (1, 1);
+
+-- Referencia 2: Articulo (usuario admin id=1)
+INSERT INTO referencias (tipo_referencia_id, usuario_id, titulo, anio, publica) VALUES (2, 1, 'Attention Is All You Need', 2017, 1);
+INSERT INTO autores (nombre, apellido) VALUES ('Ashish', 'Vaswani');
+INSERT INTO referencia_autores (referencia_id, autor_id, orden) VALUES (2, 2, 1);
+INSERT INTO valores_campos_referencia (referencia_id, campo_id, valor) VALUES
+(2, 8, 'Neural Information Processing Systems'),
+(2, 6, '30');
+INSERT INTO referencia_temas (referencia_id, tema_id) VALUES (2, 1);
+
+-- Referencia 3: Sitio web (usuario admin id=1)
+INSERT INTO referencias (tipo_referencia_id, usuario_id, titulo, anio, publica) VALUES (3, 1, 'Documentacion oficial de Node.js', 2024, 1);
+INSERT INTO autores (nombre, apellido) VALUES ('OpenJS', 'Foundation');
+INSERT INTO referencia_autores (referencia_id, autor_id, orden) VALUES (3, 3, 1);
+INSERT INTO valores_campos_referencia (referencia_id, campo_id, valor) VALUES
+(3, 14, 'https://nodejs.org/docs'),
+(3, 16, 'Node.js'),
+(3, 15, '2024-05-01');
+INSERT INTO referencia_temas (referencia_id, tema_id) VALUES (3, 1);
+
+-- Referencia 4: Repositorio electronico (usuario admin id=1)
+INSERT INTO referencias (tipo_referencia_id, usuario_id, titulo, anio, publica) VALUES (4, 1, 'TensorFlow: Large-Scale Machine Learning', 2015, 1);
+INSERT INTO autores (nombre, apellido) VALUES ('Martin', 'Abadi');
+INSERT INTO referencia_autores (referencia_id, autor_id, orden) VALUES (4, 4, 1);
+INSERT INTO valores_campos_referencia (referencia_id, campo_id, valor) VALUES
+(4, 14, 'https://arxiv.org/abs/1603.04467'),
+(4, 18, 'arXiv'),
+(4, 19, 'Google Brain'),
+(4, 15, '2024-05-01');
+INSERT INTO referencia_temas (referencia_id, tema_id) VALUES (4, 1);
+
+-- Referencia 5: Libro (usuario normal id=2)
+INSERT INTO referencias (tipo_referencia_id, usuario_id, titulo, anio, publica) VALUES (1, 2, 'The Pragmatic Programmer', 1999, 1);
+INSERT INTO autores (nombre, apellido) VALUES ('Andrew', 'Hunt');
+INSERT INTO autores (nombre, apellido) VALUES ('David', 'Thomas');
+INSERT INTO referencia_autores (referencia_id, autor_id, orden) VALUES (5, 5, 1);
+INSERT INTO referencia_autores (referencia_id, autor_id, orden) VALUES (5, 6, 2);
+INSERT INTO valores_campos_referencia (referencia_id, campo_id, valor) VALUES
+(5, 1, 'Addison-Wesley'),
+(5, 3, 'Reading'),
+(5, 4, 'Estados Unidos');
+INSERT INTO referencia_temas (referencia_id, tema_id) VALUES (5, 1);
