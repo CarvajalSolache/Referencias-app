@@ -11,7 +11,9 @@ const catalogRoutes = require('./modules/catalog/catalog.routes')
 const app = express()
 
 // Middlewares globales
-app.use(cors())
+app.use(cors({
+  origin: '*'
+}))
 app.use(express.json())
 
 // Rutas
