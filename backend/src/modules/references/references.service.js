@@ -157,13 +157,47 @@ const update = async (id, data, usuario_id) => {
     await conn.query('DELETE FROM referencia_autores WHERE referencia_id = ?', [id])
     for (let i = 0; i < data.autores.length; i++) {
       const autor = data.autores[i]
-      const [autorResult] = await conn.query(
-        'INSERT INTO autores (nombre, apellido) VALUES (?, ?)',
-        [autor.nombre, autor.apellido]
+      const [existingAutor] = await conn.query(
+        `SELECT id
+        FROM autores
+        WHERE nombre = ?
+        AND IFNULL(segundo_nombre, '') = IFNULL(?, '')
+        AND apellido = ?
+        AND IFNULL(credenciales, '') = IFNULL(?, '')
+        LIMIT 1`,
+        [
+          autor.nombre,
+          autor.segundo_nombre || '',
+          autor.apellido,
+          autor.credenciales || ''
+        ]
       )
+
+      let autorId
+
+      if (existingAutor.length > 0) {
+
+        autorId = existingAutor[0].id
+
+      } else {
+
+        const [autorResult] = await conn.query(
+          `INSERT INTO autores
+          (nombre, segundo_nombre, apellido, credenciales)
+          VALUES (?, ?, ?, ?)`,
+          [
+            autor.nombre,
+            autor.segundo_nombre || null,
+            autor.apellido,
+            autor.credenciales || null
+          ]
+        )
+
+        autorId = autorResult.insertId
+      }
       await conn.query(
         'INSERT INTO referencia_autores (referencia_id, autor_id, orden) VALUES (?, ?, ?)',
-        [id, autorResult.insertId, i + 1]
+        [id, autorId, i + 1]
       )
     }
 
