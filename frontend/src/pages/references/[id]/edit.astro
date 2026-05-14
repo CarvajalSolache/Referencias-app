@@ -38,11 +38,11 @@ const { id } = Astro.params
           <div class="row g-3 mb-4">
             <div class="col-md-8">
               <label class="form-label">Título</label>
-              <input type="text" class="form-control" id="titulo" placeholder="Título del libro" />
+              <input type="text" class="form-control" data-campo="titulo" placeholder="Título del libro" />
             </div>
             <div class="col-md-4">
               <label class="form-label">Año</label>
-              <input type="number" class="form-control" id="anio" placeholder="2024" />
+              <input type="number" class="form-control" data-campo="anio" placeholder="2024" />
             </div>
             <div class="col-md-6">
               <label class="form-label">Editorial</label>
@@ -73,11 +73,11 @@ const { id } = Astro.params
           <div class="row g-3 mb-4">
             <div class="col-md-8">
               <label class="form-label">Título</label>
-              <input type="text" class="form-control" id="titulo" placeholder="Título del artículo" />
+              <input type="text" class="form-control" data-campo="titulo" placeholder="Título del artículo" />
             </div>
             <div class="col-md-4">
               <label class="form-label">Año</label>
-              <input type="number" class="form-control" id="anio" placeholder="2024" />
+              <input type="number" class="form-control" data-campo="anio" placeholder="2024" />
             </div>
             <div class="col-md-6">
               <label class="form-label">Nombre de la revista</label>
@@ -112,11 +112,11 @@ const { id } = Astro.params
           <div class="row g-3 mb-4">
             <div class="col-md-8">
               <label class="form-label">Título</label>
-              <input type="text" class="form-control" id="titulo" placeholder="Título de la página" />
+              <input type="text" class="form-control" data-campo="titulo" placeholder="Título de la página" />
             </div>
             <div class="col-md-4">
               <label class="form-label">Año</label>
-              <input type="number" class="form-control" id="anio" placeholder="2024" />
+              <input type="number" class="form-control" data-campo="anio" placeholder="2024" />
             </div>
             <div class="col-md-8">
               <label class="form-label">URL</label>
@@ -139,11 +139,11 @@ const { id } = Astro.params
           <div class="row g-3 mb-4">
             <div class="col-md-8">
               <label class="form-label">Título</label>
-              <input type="text" class="form-control" id="titulo" placeholder="Título del documento" />
+              <input type="text" class="form-control" data-campo="titulo" placeholder="Título del documento" />
             </div>
             <div class="col-md-4">
               <label class="form-label">Año</label>
-              <input type="number" class="form-control" id="anio" placeholder="2024" />
+              <input type="number" class="form-control" data-campo="anio" placeholder="2024" />
             </div>
             <div class="col-md-8">
               <label class="form-label">URL</label>
@@ -292,7 +292,6 @@ const { id } = Astro.params
   const id = window.location.pathname.split('/')[2]
   const tipoSelect = document.getElementById('tipoReferencia')
   const formulario = document.getElementById('formularioDinamico')
-  const todosCampos = document.querySelectorAll('[id^="campos-"]')
   const selectArea = document.getElementById('selectArea')
   const selectAsignatura = document.getElementById('selectAsignatura')
   const selectTema = document.getElementById('selectTema')
@@ -300,9 +299,9 @@ const { id } = Astro.params
   const tiposMap = ['libro', 'articulo', 'sitio_web', 'repositorio_electronico']
   const camposIds = {
     editorial: 1, edicion: 2, ciudad_publicacion: 3, pais_publicacion: 4, isbn: 5,
-    volumen: 6, nombre_revista: 8, numero: 9, pagina_inicio: 10, pagina_fin: 11,
-    doi: 12, url: 14, fecha_acceso: 15, nombre_sitio: 16, nombre_repositorio: 18,
-    institucion: 19
+    volumen: 6, serie: 7, nombre_revista: 8, numero: 9, pagina_inicio: 10, pagina_fin: 11,
+    doi: 12, issn: 13, url: 14, fecha_acceso: 15, nombre_sitio: 16, organizacion: 17,
+    nombre_repositorio: 18, institucion: 19, tipo_documento: 20, numero_reporte: 21
   }
 
   // Mostrar campos según tipo
@@ -313,9 +312,8 @@ const { id } = Astro.params
       return
     }
     formulario.classList.remove('d-none')
-    todosCampos.forEach(el => el.classList.add('d-none'))
-    const camposActivos = document.getElementById('campos-' + tipo)
-    if (camposActivos) camposActivos.classList.remove('d-none')
+    document.querySelectorAll('[id^="campos-"]').forEach(el => el.classList.add('d-none'))
+    document.getElementById('campos-' + tipo).classList.remove('d-none')
   })
 
   // Agregar fila de autor
@@ -435,19 +433,22 @@ const { id } = Astro.params
     const ref = await getById(id)
     const tipo = tiposMap[ref.tipo_referencia_id - 1]
 
-    // Seleccionar tipo
+    // Seleccionar tipo y mostrar campos
     tipoSelect.value = tipo
     formulario.classList.remove('d-none')
-    todosCampos.forEach(el => el.classList.add('d-none'))
-    document.getElementById('campos-' + tipo).classList.remove('d-none')
+    document.querySelectorAll('[id^="campos-"]').forEach(el => el.classList.add('d-none'))
+    const seccionActiva = document.getElementById('campos-' + tipo)
+    seccionActiva.classList.remove('d-none')
 
-    // Prellenar título y año
-    document.getElementById('titulo').value = ref.titulo
-    document.getElementById('anio').value = ref.anio || ''
+    // Prellenar título y año en la sección activa
+    const tituloInput = seccionActiva.querySelector('[data-campo="titulo"]')
+    const anioInput = seccionActiva.querySelector('[data-campo="anio"]')
+    if (tituloInput) tituloInput.value = ref.titulo
+    if (anioInput) anioInput.value = ref.anio || ''
 
-    // Prellenar campos dinámicos
+    // Prellenar campos dinámicos en la sección activa
     ref.campos.forEach(c => {
-      const input = document.querySelector('[data-campo="' + c.nombre + '"]')
+      const input = seccionActiva.querySelector('[data-campo="' + c.nombre + '"]')
       if (input) input.value = c.valor
     })
 
@@ -455,8 +456,8 @@ const { id } = Astro.params
     ref.autores.forEach(a => agregarFilaAutor(a.nombre, a.apellido))
 
     // Prellenar clasificación
-    await cargarAreas(ref.tema ? ref.tema.area_id : null)
     if (ref.tema) {
+      await cargarAreas(ref.tema.area_id)
       selectArea.value = ref.tema.area_id
       selectAsignatura.disabled = false
       const asignaturas = await getAsignaturas(ref.tema.area_id)
@@ -479,20 +480,21 @@ const { id } = Astro.params
     } else {
       await cargarAreas()
     }
-      // Mostrar agregado por
-  const agregadoPorDiv = document.createElement('div')
-  agregadoPorDiv.classList.add('mb-4')
-  agregadoPorDiv.innerHTML = `
-    <hr />
-    <h6 class="text-muted mb-3">Información de registro</h6>
-    <div class="row g-3">
-      <div class="col-md-4">
-        <label class="form-label text-muted small">Agregado por</label>
-        <p class="fw-bold">${ref.agregado_por}</p>
+
+    // Mostrar agregado por
+    const agregadoPorDiv = document.createElement('div')
+    agregadoPorDiv.classList.add('mb-4')
+    agregadoPorDiv.innerHTML = `
+      <hr />
+      <h6 class="text-muted mb-3">Información de registro</h6>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label text-muted small">Agregado por</label>
+          <p class="fw-bold">${ref.agregado_por}</p>
+        </div>
       </div>
-    </div>
-  `
-  document.getElementById('btnGuardar').parentElement.before(agregadoPorDiv)
+    `
+    document.getElementById('btnGuardar').parentElement.before(agregadoPorDiv)
   }
 
   // Guardar cambios
@@ -500,8 +502,12 @@ const { id } = Astro.params
     const tipo = tipoSelect.value
     if (!tipo) return alert('Selecciona un tipo de referencia')
 
-    const titulo = document.getElementById('titulo').value.trim()
-    const anio = document.getElementById('anio').value ? parseInt(document.getElementById('anio').value) : null
+    const seccionActiva = document.getElementById('campos-' + tipo)
+    const titulo = seccionActiva.querySelector('[data-campo="titulo"]').value.trim()
+    const anio = seccionActiva.querySelector('[data-campo="anio"]').value
+      ? parseInt(seccionActiva.querySelector('[data-campo="anio"]').value)
+      : null
+
     if (!titulo) return alert('El título es requerido')
 
     const autores = []
@@ -514,8 +520,9 @@ const { id } = Astro.params
     if (autores.length === 0) return alert('Agrega al menos un autor')
 
     const campos = []
-    document.querySelectorAll('[data-campo]').forEach(input => {
+    seccionActiva.querySelectorAll('[data-campo]').forEach(input => {
       const nombreCampo = input.dataset.campo
+      if (nombreCampo === 'titulo' || nombreCampo === 'anio') return
       const valor = input.value.trim()
       if (valor && camposIds[nombreCampo]) {
         campos.push({ campo_id: camposIds[nombreCampo], valor })
