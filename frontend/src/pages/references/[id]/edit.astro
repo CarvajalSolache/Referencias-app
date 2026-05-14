@@ -20,13 +20,8 @@ const { id } = Astro.params
       <!-- Tipo de referencia -->
       <div class="mb-4">
         <label class="form-label fw-bold">Tipo de referencia</label>
-        <select class="form-select" id="tipoReferencia">
-          <option value="">-- Selecciona un tipo --</option>
-          <option value="libro">Libro</option>
-          <option value="articulo">Artículo</option>
-          <option value="sitio_web">Sitio web</option>
-          <option value="repositorio_electronico">Repositorio electrónico</option>
-        </select>
+        <p class="fw-bold" id="tipoReferencia"></p>
+        <input type="hidden" id="tipoReferenciaValor" />
       </div>
 
       <!-- Contenido dinámico -->
@@ -304,18 +299,6 @@ const { id } = Astro.params
     nombre_repositorio: 18, institucion: 19, tipo_documento: 20, numero_reporte: 21
   }
 
-  // Mostrar campos según tipo
-  tipoSelect.addEventListener('change', () => {
-    const tipo = tipoSelect.value
-    if (!tipo) {
-      formulario.classList.add('d-none')
-      return
-    }
-    formulario.classList.remove('d-none')
-    document.querySelectorAll('[id^="campos-"]').forEach(el => el.classList.add('d-none'))
-    document.getElementById('campos-' + tipo).classList.remove('d-none')
-  })
-
   // Agregar fila de autor
   const agregarFilaAutor = (nombre = '', apellido = '') => {
     const fila = document.createElement('div')
@@ -434,7 +417,14 @@ const { id } = Astro.params
     const tipo = tiposMap[ref.tipo_referencia_id - 1]
 
     // Seleccionar tipo y mostrar campos
-    tipoSelect.value = tipo
+    const tiposNombres = {
+      libro: 'Libro',
+      articulo: 'Artículo',
+      sitio_web: 'Sitio web',
+      repositorio_electronico: 'Repositorio electrónico'
+    }
+    document.getElementById('tipoReferencia').textContent = tiposNombres[tipo]
+    document.getElementById('tipoReferenciaValor').value = tipo
     formulario.classList.remove('d-none')
     document.querySelectorAll('[id^="campos-"]').forEach(el => el.classList.add('d-none'))
     const seccionActiva = document.getElementById('campos-' + tipo)
@@ -499,7 +489,7 @@ const { id } = Astro.params
 
   // Guardar cambios
   document.getElementById('btnGuardar').addEventListener('click', async () => {
-    const tipo = tipoSelect.value
+    const tipo = document.getElementById('tipoReferenciaValor').value
     if (!tipo) return alert('Selecciona un tipo de referencia')
 
     const seccionActiva = document.getElementById('campos-' + tipo)
