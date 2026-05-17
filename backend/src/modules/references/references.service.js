@@ -135,17 +135,19 @@ const create = async (data, usuario_id) => {
   }
 }
 
-const update = async (id, data, usuario_id) => {
+const update = async (id, data, usuario_id, rol) => {
   const conn = await pool.getConnection()
   try {
     await conn.beginTransaction()
 
-    // Verificar que la referencia pertenece al usuario
-    const [existing] = await conn.query(
-      'SELECT id FROM referencias WHERE id = ? AND usuario_id = ?',
-      [id, usuario_id]
-    )
-    if (existing.length === 0) throw new Error('Referencia no encontrada')
+    // Si no es admin verificar que sea el dueño
+    if (rol !== 'admin') {
+      const [existing] = await conn.query(
+        'SELECT id FROM referencias WHERE id = ? AND usuario_id = ?',
+        [id, usuario_id]
+      )
+      if (existing.length === 0) throw new Error('No tienes permiso para editar esta referencia')
+    }
 
     // Actualizar referencia
     await conn.query(

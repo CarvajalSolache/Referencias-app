@@ -32,7 +32,7 @@ const createController = async (req, res) => {
 const updateController = async (req, res) => {
   try {
     const data = referenciaBaseSchema.parse(req.body)
-    const referencia = await update(req.params.id, data, req.usuario.id)
+    const referencia = await update(req.params.id, data, req.usuario.id, req.usuario.rol)
     res.status(200).json({ message: 'Referencia actualizada correctamente', referencia })
   } catch (error) {
     res.status(400).json({ message: error.message })
