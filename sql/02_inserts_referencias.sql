@@ -745,3 +745,13 @@ INSERT IGNORE INTO valores_campos_referencia (referencia_id, campo_id, valor) VA
 INSERT IGNORE INTO valores_campos_referencia (referencia_id, campo_id, valor) VALUES ((SELECT id FROM referencias WHERE titulo = 'Designing Distributed Systems' AND usuario_id = (SELECT id FROM usuarios WHERE correo_electronico = 'andres@ejemplo.com')), 4, 'EUA');
 INSERT IGNORE INTO valores_campos_referencia (referencia_id, campo_id, valor) VALUES ((SELECT id FROM referencias WHERE titulo = 'Designing Distributed Systems' AND usuario_id = (SELECT id FROM usuarios WHERE correo_electronico = 'andres@ejemplo.com')), 5, '978-1491983645');
 INSERT IGNORE INTO referencia_temas (referencia_id, tema_id) VALUES ((SELECT id FROM referencias WHERE titulo = 'Designing Distributed Systems' AND usuario_id = (SELECT id FROM usuarios WHERE correo_electronico = 'andres@ejemplo.com')), (SELECT id FROM temas WHERE nombre = 'Arquitectura' AND asignatura_id = (SELECT id FROM asignaturas WHERE nombre = 'Computacion en la Nube' AND area_id = (SELECT id FROM areas WHERE nombre = 'Informatica'))));
+
+-- Insertar autor por defecto
+INSERT INTO autores (nombre, apellido) VALUES ('No', 'Definido');
+
+-- Asignarlo a las referencias sin autor
+INSERT INTO referencia_autores (referencia_id, autor_id, orden)
+SELECT r.id, (SELECT id FROM autores WHERE nombre = 'No' AND apellido = 'Definido'), 1
+FROM referencias r
+LEFT JOIN referencia_autores ra ON r.id = ra.referencia_id
+WHERE ra.referencia_id IS NULL;
