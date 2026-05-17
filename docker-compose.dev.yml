@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: referencias_backend_dev
+    restart: always
+    environment:
+      PORT: 3000
+      DB_HOST: host.docker.internal
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: 1234
+      DB_NAME: Referencias
+      JWT_SECRET: r3f3r3nc1as_app_s3cr3t_k3y_2024_xK9#mP2$nL
+    ports:
+      - "3000:3000"
+
+  frontend:
+    build: ./frontend
+    container_name: referencias_frontend_dev
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "4321:4321"
